@@ -12,7 +12,19 @@ namespace RPG.Combat
     [SerializeField] float attackRange = 1.75f;
     [SerializeField] float timeBetweenAttacks = 1f;
     [SerializeField] float weaponDamage = 5f;
+    [SerializeField] GameObject weaponPrefab = null;
+    [SerializeField] GameObject shieldPrefab = null;
+    [SerializeField] Transform rightHandTransform = null;
+    [SerializeField] Transform leftHandTransform = null;
+    [SerializeField] AnimatorOverrideController weaponOverride = null;
+
     float timeSinceLastAttack = Mathf.Infinity;
+
+    private void Start()
+    {
+      SpawnWeapon();
+      SpawnShield();
+    }
 
     private void Update()
     {
@@ -87,6 +99,19 @@ namespace RPG.Combat
     {
       GetComponent<Animator>().ResetTrigger("attack");
       GetComponent<Animator>().SetTrigger("stopAttack");
+    }
+
+    private void SpawnWeapon()
+    {
+      Instantiate(weaponPrefab, rightHandTransform);
+      Animator animator = GetComponent<Animator>();
+      animator.runtimeAnimatorController = weaponOverride;
+    }
+
+    private void SpawnShield()
+    {
+      if (gameObject.tag != "Player") return;
+      Instantiate(shieldPrefab, leftHandTransform);
     }
   }
 }
