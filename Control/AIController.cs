@@ -13,12 +13,14 @@ namespace RPG.Control
   {
     [SerializeField] float chaseDistance = 10f;
     [SerializeField] float suspicionTime = 5f;
+    [SerializeField] float aggroCooldownTime = 5f;
     [SerializeField] PatrolPath patrolPath;
     [SerializeField] float dwellingTime = 5f;
     [Range(0, 1)]
     [SerializeField] float patrolSpeedFraction = 0.2f;
-    float waypointTolerance = 1f;
+    [SerializeField] float shoutDistance = 10;
 
+    float waypointTolerance = 1f;
     GameObject player;
     Fighter fighter;
     Mover mover;
@@ -27,6 +29,7 @@ namespace RPG.Control
     float timeSinceLastSawPlayer = Mathf.Infinity;
     int currentWaypointIndex = 0;
     float timeSinceAtWaypoint = Mathf.Infinity;
+    float timeSinceAggrevated = Mathf.Infinity;
 
     private void Awake()
     {
@@ -50,9 +53,8 @@ namespace RPG.Control
     void Update()
     {
       if (health.IsDead()) return;
-      if (InAttackRangeOfPlayer() && fighter.CanAttack(player))
+      if (IsAggrevated() && fighter.CanAttack(player))
       {
-        timeSinceLastSawPlayer = 0;
         AttackBehaviour();
       }
       else if (timeSinceLastSawPlayer < suspicionTime)
@@ -67,15 +69,34 @@ namespace RPG.Control
       UpdateTimer();
     }
 
+    public void Aggrevate()
+    {
+      timeSinceAggrevated = 0;
+    }
+
     private void UpdateTimer()
     {
       timeSinceAtWaypoint += Time.deltaTime;
       timeSinceLastSawPlayer += Time.deltaTime;
+      timeSinceAggrevated += Time.deltaTime;
     }
 
     private void AttackBehaviour()
     {
+      timeSinceLastSawPlayer = 0;
       fighter.Attack(player);
+      AggrevateNearbyEnemies();
+    }
+
+    private void AggrevateNearbyEnemies()
+    {
+      RaycastHit[] hits = Physics.SphereCastAll(transform.position, shoutDistance, Vector3.up, 0);
+      foreach (RaycastHit hit in hits)
+      {
+        AIController ai = hit.collider.GetComponent<AIController>();
+        if (ai == null) continue;
+        ai.Aggrevate();
+      }
     }
 
     private void SuspicionBehaviour()
@@ -118,10 +139,10 @@ namespace RPG.Control
       return distanceToWaypoint < waypointTolerance;
     }
 
-    private bool InAttackRangeOfPlayer()
+    private bool IsAggrevated()
     {
       float distanceToPlayer = Vector3.Distance(transform.position, player.transform.position);
-      return distanceToPlayer < chaseDistance;
+      return distanceToPlayer < chaseDistance || timeSinceAggrevated < aggroCooldownTime;
     }
 
     // Called by Unity

@@ -1,21 +1,36 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using RPG.Control;
+using RPG.Attributes;
 
 namespace RPG.Combat
 {
-  public class WeaponPickup : MonoBehaviour
+  public class WeaponPickup : MonoBehaviour, IRaycastable
   {
-    [SerializeField] Weapon weapon = null;
+    [SerializeField] WeaponConfig weapon = null;
+    [SerializeField] float healthToRestore = 0f;
     [SerializeField] float hideTime = 5f;
 
     private void OnTriggerEnter(Collider other)
     {
       if (other.gameObject.tag == "Player")
       {
-        other.GetComponent<Fighter>().EquipWeapon(weapon);
-        StartCoroutine(HideForSeconds(hideTime));
+        Pickup(other.gameObject);
       }
+    }
+
+    private void Pickup(GameObject subject)
+    {
+      if (weapon != null)
+      {
+        subject.GetComponent<Fighter>().EquipWeapon(weapon);
+      }
+      if (healthToRestore > 0)
+      {
+        subject.GetComponent<Health>().Heal(healthToRestore);
+      }
+      StartCoroutine(HideForSeconds(hideTime));
     }
 
     private IEnumerator HideForSeconds(float seconds)
@@ -32,6 +47,20 @@ namespace RPG.Combat
       {
         child.gameObject.SetActive(shouldShow);
       }
+    }
+
+    public bool HandleRaycast(PlayerController callingController)
+    {
+      if (Input.GetMouseButtonDown(1))
+      {
+        Pickup(callingController.gameObject);
+      }
+      return true;
+    }
+
+    public CursorType GetCursorType()
+    {
+      return CursorType.Pickup;
     }
   }
 }
