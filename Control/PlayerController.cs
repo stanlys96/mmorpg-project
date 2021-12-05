@@ -50,7 +50,12 @@ namespace RPG.Control
 
     private bool InteractWithUI()
     {
-      return EventSystem.current.IsPointerOverGameObject;
+      if (EventSystem.current.IsPointerOverGameObject())
+      {
+        SetCursor(CursorType.None);
+        return true;
+      }
+      return false;
     }
 
     private bool InteractWithCombat()
