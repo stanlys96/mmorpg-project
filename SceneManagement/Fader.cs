@@ -15,11 +15,13 @@ namespace RPG.SceneManagement
 
     public void FadeOutImmediate()
     {
+      if (canvasGroup == null) return;
       canvasGroup.alpha = 1;
     }
 
     public IEnumerator FadeOut(float time)
     {
+      if (canvasGroup == null) yield break;
       while (canvasGroup.alpha < 1)
       {
         canvasGroup.alpha += Time.deltaTime / time;
@@ -29,6 +31,7 @@ namespace RPG.SceneManagement
 
     public IEnumerator FadeIn(float time)
     {
+      if (canvasGroup == null) yield break;
       while (canvasGroup.alpha > 0)
       {
         canvasGroup.alpha -= Time.deltaTime / time;

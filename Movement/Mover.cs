@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.AI;
 using RPG.Core;
 using RPG.Saving;
+using RPG.Attributes;
 
 namespace RPG.Movement
 {
@@ -13,7 +14,8 @@ namespace RPG.Movement
     [SerializeField] float maxSpeed = 6f;
     NavMeshAgent navMeshAgent;
     Health health;
-    private void Start()
+
+    private void Awake()
     {
       navMeshAgent = GetComponent<NavMeshAgent>();
       health = GetComponent<Health>();
@@ -70,10 +72,8 @@ namespace RPG.Movement
     public void RestoreState(object state)
     {
       MoverSaveData data = (MoverSaveData)state;
-      GetComponent<NavMeshAgent>().enabled = false;
-      transform.position = data.position.ToVector();
+      GetComponent<NavMeshAgent>().Warp(data.position.ToVector());
       transform.eulerAngles = data.rotation.ToVector();
-      GetComponent<NavMeshAgent>().enabled = true;
     }
   }
 }
